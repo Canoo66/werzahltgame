@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💸 Wer zahlt?</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --yellow:#FFE600; --orange:#ff6b00; --pink:#ff3d72; --purple:#b99fff; --dark:#1a0a2e; }
+  body {
+    font-family:'Nunito',sans-serif; background:var(--dark); min-height:100vh;
+    display:flex; flex-direction:column; align-items:center;
+    padding:2.5rem 1rem 4rem; position:relative; overflow-x:hidden;
+  }
+  body::before {
+    content:''; position:fixed; inset:0;
+    background:radial-gradient(ellipse at 15% 40%,rgba(45,16,80,.9) 0%,transparent 55%),
+               radial-gradient(ellipse at 85% 15%,rgba(10,26,64,.8) 0%,transparent 50%),var(--dark);
+    z-index:0; animation:bgShift 8s ease-in-out infinite alternate;
+  }
+  @keyframes bgShift{from{filter:hue-rotate(0deg)}to{filter:hue-rotate(15deg)}}
+  .particles{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .particle{position:absolute;border-radius:50%;opacity:.12;animation:floatUp linear infinite}
+  @keyframes floatUp{0%{transform:translateY(100vh) rotate(0deg);opacity:0}10%{opacity:.12}90%{opacity:.12}100%{transform:translateY(-100px) rotate(360deg);opacity:0}}
+  .container{position:relative;z-index:1;width:100%;max-width:700px}
+
+  /* HEADER */
+  .header{text-align:center;margin-bottom:2rem}
+  h1{font-family:'Bangers',cursive;font-size:clamp(3rem,10vw,5.5rem);color:var(--yellow);letter-spacing:4px;text-shadow:5px 5px 0 var(--orange),10px 10px 0 rgba(255,107,0,.25);line-height:1;animation:titleBounce .8s cubic-bezier(.34,1.56,.64,1) both}
+  @keyframes titleBounce{from{opacity:0;transform:scale(.5) rotate(-3deg)}to{opacity:1;transform:scale(1) rotate(0deg)}}
+  .tagline{color:var(--purple);font-size:.9rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-top:.3rem;opacity:0;animation:fadeUp .6s .4s ease forwards}
+  .made-by{color:rgba(255,230,0,.38);font-size:.75rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-top:.2rem;opacity:0;animation:fadeUp .6s .55s ease forwards}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+  /* INPUT */
+  .input-section{background:rgba(255,255,255,.04);border:1.5px solid rgba(255,230,0,.18);border-radius:24px;padding:1.5rem;margin-bottom:1rem;opacity:0;animation:fadeUp .6s .65s ease forwards;backdrop-filter:blur(10px)}
+  .input-row{display:flex;gap:10px;margin-bottom:14px}
+  .input-row input{flex:1;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);border-radius:14px;padding:.8rem 1.1rem;color:#fff;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:700;outline:none;transition:border-color .2s,background .2s}
+  .input-row input:focus{border-color:var(--yellow);background:rgba(255,230,0,.06)}
+  .input-row input::placeholder{color:rgba(255,255,255,.28);font-weight:400}
+  .add-btn{background:var(--yellow);color:var(--dark);border:none;border-radius:14px;padding:.8rem 1.4rem;font-family:'Bangers',cursive;font-size:1.3rem;letter-spacing:1px;cursor:pointer;flex-shrink:0;transition:transform .15s,background .15s;box-shadow:0 4px 16px rgba(255,230,0,.25)}
+  .add-btn:hover{background:#fff200;transform:scale(1.06)}
+  .add-btn:active{transform:scale(.95)}
+
+  /* NAMES */
+  .names-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px;min-height:40px}
+  .name-tag{background:rgba(255,230,0,.08);border:1.5px solid rgba(255,230,0,.22);border-radius:12px;padding:.5rem .75rem;color:var(--yellow);font-weight:700;font-size:.88rem;display:flex;align-items:center;justify-content:space-between;gap:5px;animation:popIn .28s cubic-bezier(.34,1.56,.64,1);transition:background .15s,border-color .15s,transform .15s,box-shadow .15s}
+  @keyframes popIn{from{opacity:0;transform:scale(.4) rotate(-8deg)}to{opacity:1;transform:scale(1) rotate(0deg)}}
+  .name-tag.highlighted{background:rgba(255,230,0,.2);border-color:var(--yellow);transform:scale(1.07);box-shadow:0 0 14px rgba(255,230,0,.3)}
+  .name-tag.loser{background:rgba(255,61,114,.25);border-color:var(--pink);color:var(--pink);transform:scale(1.12);box-shadow:0 0 20px rgba(255,61,114,.45)}
+  .name-tag span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .name-tag button{background:none;border:none;color:rgba(255,230,0,.3);cursor:pointer;font-size:1.1rem;line-height:1;padding:0;flex-shrink:0;transition:color .15s,transform .1s}
+  .name-tag button:hover{color:var(--pink);transform:scale(1.3)}
+  .empty-hint{color:rgba(255,255,255,.2);font-size:.9rem;font-style:italic;grid-column:1/-1;text-align:center;padding:.5rem 0}
+  .counter{text-align:center;color:rgba(255,230,0,.45);font-size:.8rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem;min-height:1.2em}
+
+  /* ROLL */
+  .roll-btn{width:100%;background:linear-gradient(135deg,var(--orange),var(--pink));color:#fff;border:none;border-radius:20px;padding:1.2rem;font-family:'Bangers',cursive;font-size:2rem;letter-spacing:4px;cursor:pointer;transition:transform .15s,box-shadow .2s;box-shadow:0 8px 28px rgba(255,107,0,.38);margin-bottom:1.3rem;position:relative;overflow:hidden;opacity:0;animation:fadeUp .6s .9s ease forwards}
+  .roll-btn:hover{transform:translateY(-3px);box-shadow:0 14px 36px rgba(255,107,0,.52)}
+  .roll-btn:active{transform:scale(.98)}
+  .roll-btn:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
+
+  /* RESULT */
+  .result-card{background:rgba(255,255,255,.035);border:2px solid rgba(255,230,0,.12);border-radius:26px;padding:2rem;text-align:center;min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:border-color .35s,background .35s;opacity:0;animation:fadeUp .6s 1.1s ease forwards}
+  .result-card.has-result{border-color:rgba(255,230,0,.55);background:rgba(255,230,0,.05)}
+  .result-label{color:rgba(255,255,255,.4);font-size:.82rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:.5rem}
+  .result-emoji{font-size:3.2rem;margin-bottom:.4rem;display:block}
+  .result-name{font-family:'Bangers',cursive;font-size:clamp(2.5rem,9vw,4.2rem);color:var(--yellow);letter-spacing:3px;text-shadow:4px 4px 0 var(--orange);animation:nameReveal .5s cubic-bezier(.34,1.56,.64,1);line-height:1.1}
+  @keyframes nameReveal{from{opacity:0;transform:scale(.3) rotate(-6deg)}to{opacity:1;transform:scale(1) rotate(0deg)}}
+  .result-sub{color:var(--purple);font-size:.98rem;font-weight:700;margin-top:.6rem;max-width:440px;line-height:1.4}
+  .placeholder-text{color:rgba(255,255,255,.18);font-size:1rem;font-style:italic}
+  .rolling-display{font-family:'Bangers',cursive;font-size:2.8rem;color:var(--yellow);letter-spacing:4px;animation:flicker .08s infinite alternate}
+  @keyframes flicker{from{opacity:1}to{opacity:.45}}
+
+  /* FOOTER */
+  .footer{position:relative;z-index:1;margin-top:2.5rem;text-align:center}
+  .footer p{color:rgba(255,255,255,.15);font-size:.8rem;font-style:italic;margin-bottom:.7rem}
+  .impressum-btn{background:none;border:1px solid rgba(185,159,255,.25);border-radius:20px;color:rgba(185,159,255,.5);font-family:'Nunito',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:1px;padding:.35rem 1rem;cursor:pointer;transition:border-color .2s,color .2s}
+  .impressum-btn:hover{border-color:var(--purple);color:var(--purple)}
+
+  /* MODAL */
+  .modal-overlay{display:none;position:fixed;inset:0;z-index:10000;background:rgba(10,4,22,.86);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:1rem}
+  .modal-overlay.open{display:flex}
+  .modal-box{background:#1e0d38;border:1.5px solid rgba(185,159,255,.28);border-radius:24px;padding:2rem;max-width:430px;width:100%;position:relative;animation:popIn .3s cubic-bezier(.34,1.56,.64,1) both}
+  .modal-close{position:absolute;top:1rem;right:1rem;background:none;border:none;color:rgba(255,255,255,.3);font-size:1.6rem;cursor:pointer;line-height:1;transition:color .15s}
+  .modal-close:hover{color:var(--pink)}
+  .modal-title{font-family:'Bangers',cursive;font-size:2rem;color:var(--yellow);letter-spacing:2px;text-shadow:3px 3px 0 var(--orange);margin-bottom:1.4rem}
+  .imp-row{display:flex;align-items:flex-start;gap:12px;padding:.8rem 0;border-bottom:1px solid rgba(255,255,255,.07)}
+  .imp-row:last-of-type{border-bottom:none}
+  .imp-icon{width:36px;height:36px;border-radius:50%;background:rgba(185,159,255,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+  .imp-icon svg{width:18px;height:18px}
+  .imp-label{color:rgba(255,255,255,.35);font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
+  .imp-value{color:rgba(255,255,255,.85);font-size:.92rem;font-weight:700}
+  .discord-link{display:flex;align-items:center;gap:14px;margin-top:1.4rem;background:rgba(88,101,242,.15);border:1.5px solid rgba(88,101,242,.4);border-radius:14px;padding:.9rem 1.1rem;text-decoration:none;transition:background .2s,border-color .2s}
+  .discord-link:hover{background:rgba(88,101,242,.28);border-color:rgba(88,101,242,.75)}
+  .discord-label span:first-child{display:block;color:rgba(255,255,255,.4);font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px}
+  .discord-label span:last-child{color:#fff;font-size:.95rem;font-weight:900}
+
+  /* CONFETTI */
+  .confetti-piece{position:fixed;pointer-events:none;z-index:9999;animation:confettiFall linear forwards}
+  @keyframes confettiFall{0%{transform:translateY(-30px) rotate(0deg);opacity:1}100%{transform:translateY(105vh) rotate(800deg);opacity:0}}
+
+  @media(max-width:480px){body{padding:1.5rem .75rem 3rem}.names-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}}
+</style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<div class="container">
+  <div class="header">
+    <h1>💸 WER ZAHLT?</h1>
+    <p class="tagline">Der unerbittliche Zufallsrichter seit 2025</p>
+    <p class="made-by">Made by Canoo ✦</p>
+  </div>
+
+  <div class="input-section">
+    <div class="input-row">
+      <input id="nameInput" type="text" placeholder="Namen hinzufügen..." maxlength="18" autocomplete="off" />
+      <button class="add-btn" onclick="addName()">+ ADD</button>
+    </div>
+    <div class="names-grid" id="namesList">
+      <span class="empty-hint">Füge alle hinzu, die zahlen könnten... 👀</span>
+    </div>
+  </div>
+
+  <p class="counter" id="counter"></p>
+  <button class="roll-btn" id="rollBtn" onclick="roll()" disabled>🎲 WÜRFELN!</button>
+
+  <div class="result-card" id="resultCard">
+    <p class="placeholder-text">Noch niemand im Pott – los geht's!</p>
+  </div>
+
+  <div class="footer">
+    <p>Kein Algorithmus haftet für Freundschaftsschäden 😇</p>
+    <button class="impressum-btn" onclick="openModal()">Impressum</button>
+  </div>
+</div>
+
+<!-- IMPRESSUM MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="overlayClick(event)">
+  <div class="modal-box" id="modalBox">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <p class="modal-title">📄 IMPRESSUM</p>
+
+    <div class="imp-row">
+      <div class="imp-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#b99fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <div>
+        <div class="imp-label">Name</div>
+        <div class="imp-value">Can Delibosi</div>
+      </div>
+    </div>
+
+    <div class="imp-row">
+      <div class="imp-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#b99fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+        </svg>
+      </div>
+      <div>
+        <div class="imp-label">Adresse</div>
+        <div class="imp-value">Ludgerweg 184, 42109 Wuppertal, Deutschland</div>
+      </div>
+    </div>
+
+    <div class="imp-row">
+      <div class="imp-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#b99fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+        </svg>
+      </div>
+      <div>
+        <div class="imp-label">E-Mail</div>
+        <div class="imp-value">canooservice@gmail.com</div>
+      </div>
+    </div>
+
+    <a class="discord-link" href="https://discord.gg/TpQWZDXRwg" target="_blank" rel="noopener">
+      <svg width="34" height="34" viewBox="0 0 127.14 96.36" xmlns="http://www.w3.org/2000/svg" fill="#5865F2">
+        <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/>
+      </svg>
+      <div class="discord-label">
+        <span>Komm auf unseren Discord</span>
+        <span>discord.gg/TpQWZDXRwg</span>
+      </div>
+    </a>
+  </div>
+</div>
+
+<script>
+  /* PARTICLES */
+  (function(){
+    const c=document.getElementById('particles');
+    const cols=['#FFE600','#ff6b00','#ff3d72','#b99fff'];
+    for(let i=0;i<18;i++){
+      const el=document.createElement('div');
+      el.className='particle';
+      const s=4+Math.random()*12;
+      el.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;background:${cols[Math.floor(Math.random()*cols.length)]};animation-duration:${8+Math.random()*14}s;animation-delay:${Math.random()*10}s;`;
+      c.appendChild(el);
+    }
+  })();
+
+  let names=[],rolling=false;
+  const input=document.getElementById('nameInput');
+  const listEl=document.getElementById('namesList');
+  const btn=document.getElementById('rollBtn');
+  const card=document.getElementById('resultCard');
+  const counter=document.getElementById('counter');
+
+  /* MODAL */
+  function openModal(){document.getElementById('modalOverlay').classList.add('open')}
+  function closeModal(){document.getElementById('modalOverlay').classList.remove('open')}
+  function overlayClick(e){if(e.target===document.getElementById('modalOverlay'))closeModal()}
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+
+  /* MESSAGES */
+  const emojis=['😱','💀','🤑','😭','🎰','🤦','😬','💸','🍕','🍻','😤','🤯','🫣','🥲','😆','🤌','😮‍💨','🫠'];
+  const msgs=[
+    n=>`${n} schaut in die Kamera und weint leise.`,
+    n=>`${n} öffnet die Geldbörse… und ein Mottenschwarm fliegt raus.`,
+    n=>`${n} tippt die PIN dreimal falsch ein. Nervös.`,
+    n=>`${n} sagt "ich hab kein Bargeld" – lügt aber.`,
+    n=>`${n} fragt ob Splitten geht. Nein. Zahlt.`,
+    n=>`${n} schaut aufs Handy als ob gerade jemand anruft. Klappt nicht.`,
+    n=>`${n} versucht die Quittung als Betriebsausgabe abzusetzen.`,
+    n=>`${n} denkt kurz ans Weglaufen. Kurz.`,
+    n=>`${n} seufzt tief, zahlt, und bestellt zur Strafe noch Dessert.`,
+    n=>`${n} behauptet letztes Mal auch gezahlt zu haben. Stimmt nicht.`,
+    n=>`${n} sagt "das nächste Mal zahlt ihr alle." Wird nie passieren.`,
+    n=>`${n} googelt schnell wie man Essen reklamiert. Klappt nicht.`,
+    n=>`${n} überlegt ob Freundschaft das wert ist. Ja. Knapp.`,
+    n=>`${n} zahlt mit Kleingeld. Absichtlich.`,
+    n=>`${n} tippt "zahlen" in PayPal ein und schämt sich danach.`,
+    n=>`${n} fragt "geht auch Twint?" – Nein. Geht nicht.`,
+    n=>`${n} sagt der Kellner soll das unter 3 Tische aufteilen. Kellner sagt nein.`,
+    n=>`${n} findet plötzlich einen alten Bon. Hilft nichts.`,
+    n=>`${n} bestellt beim nächsten Mal nur Wasser. Aus Rache.`,
+    n=>`${n} nennt es "ein Investment in die Freundschaft".`,
+  ];
+
+  input.addEventListener('keydown',e=>{if(e.key==='Enter')addName()});
+
+  function addName(){
+    const name=input.value.trim();
+    if(!name)return input.focus();
+    if(names.map(n=>n.toLowerCase()).includes(name.toLowerCase())){input.select();return}
+    names.push(name);input.value='';input.focus();render();
+  }
+  function removeName(i){names.splice(i,1);render();if(names.length<2)resetCard()}
+  function resetCard(){card.className='result-card';card.innerHTML='<p class="placeholder-text">Noch niemand im Pott – los geht\'s!</p>'}
+  function render(){
+    btn.disabled=names.length<2;
+    counter.textContent=names.length>0?`${names.length} Person${names.length!==1?'en':''} im Pott`:'';
+    if(names.length===0){listEl.innerHTML='<span class="empty-hint">Füge alle hinzu, die zahlen könnten… 👀</span>';return}
+    listEl.innerHTML=names.map((n,i)=>`<div class="name-tag" id="tag-${i}"><span title="${n}">${n}</span><button onclick="removeName(${i})" aria-label="Entfernen">×</button></div>`).join('');
+  }
+  function highlightTag(idx,cls){
+    document.querySelectorAll('.name-tag').forEach(t=>t.classList.remove('highlighted','loser'));
+    const tag=document.getElementById('tag-'+idx);
+    if(tag)tag.classList.add(cls);
+  }
+  function roll(){
+    if(rolling||names.length<2)return;
+    rolling=true;btn.disabled=true;btn.textContent='🎲 WÜRFELN...';
+    card.className='result-card';
+    card.innerHTML='<p class="result-label">Das Schicksal entscheidet...</p><div class="rolling-display" id="rollingName">???</div>';
+    const rollingEl=document.getElementById('rollingName');
+    let ticks=0,current=0;
+    const total=26+Math.floor(Math.random()*16);
+    function getDelay(t){const p=t/total;if(p<.6)return 65;if(p<.8)return 100;if(p<.92)return 160;return 240}
+    function tick(){
+      ticks++;current=Math.floor(Math.random()*names.length);
+      if(rollingEl)rollingEl.textContent=names[current].toUpperCase();
+      highlightTag(current,'highlighted');
+      if(ticks>=total){highlightTag(current,'loser');showResult(names[current])}
+      else setTimeout(tick,getDelay(ticks));
+    }
+    setTimeout(tick,65);
+  }
+  function showResult(winner){
+    const emoji=emojis[Math.floor(Math.random()*emojis.length)];
+    const msg=msgs[Math.floor(Math.random()*msgs.length)](winner);
+    card.className='result-card has-result';
+    card.innerHTML=`<p class="result-label">Heute zahlt...</p><span class="result-emoji">${emoji}</span><div class="result-name">${winner}</div><p class="result-sub">${msg}</p>`;
+    spawnConfetti();
+    setTimeout(()=>{btn.textContent='🎲 NOCHMAL!';btn.disabled=false;rolling=false},800);
+  }
+  function spawnConfetti(){
+    const cols=['#FFE600','#ff6b00','#ff3d72','#b99fff','#00e5ff','#fff','#00ff88'];
+    for(let i=0;i<90;i++){
+      const el=document.createElement('div');
+      el.className='confetti-piece';
+      const s=6+Math.random()*12,circle=Math.random()>.4;
+      el.style.cssText=`left:${Math.random()*100}vw;top:0;background:${cols[Math.floor(Math.random()*cols.length)]};width:${s}px;height:${circle?s:s*.5}px;border-radius:${circle?'50%':'2px'};animation-duration:${1.4+Math.random()*2}s;animation-delay:${Math.random()*.6}s;`;
+      document.body.appendChild(el);
+      el.addEventListener('animationend',()=>el.remove());
+    }
+  }
+  render();
+</script>
+</body>
+</html>
