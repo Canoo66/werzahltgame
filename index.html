@@ -303,6 +303,18 @@
     }
   }
   render();
+
+  /* SCHUTZ */
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('keydown', e => {
+    if (
+      e.key === 'F12' ||
+      (e.ctrlKey && ['u','U','s','S','a','A','c','C'].includes(e.key)) ||
+      (e.ctrlKey && e.shiftKey && ['i','I','j','J','c','C'].includes(e.key))
+    ) e.preventDefault();
+  });
+  document.addEventListener('dragstart', e => e.preventDefault());
+  document.addEventListener('selectstart', e => e.preventDefault());
 </script>
 </body>
 </html>
